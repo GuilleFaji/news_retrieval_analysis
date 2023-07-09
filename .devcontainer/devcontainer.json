@@ -1,0 +1,15 @@
+{
+  "name": "News_retrieval",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {"VARIANT": "3.10"},
+  }
+  "extensions": [
+    "ms-python.python"
+  ],
+  "settings": {
+    "python.pythonPath": "/usr/local/bin/python"
+  },
+  "forwardPorts": [7860]
+}
