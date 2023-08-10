@@ -1,7 +1,8 @@
-# GDELT TO CSV NEWS DOWNLOADER:
-# This script downloads the news articles from the GDELT database and saves
-# them in a csv file.
-
+'''
+GDELT TO CSV NEWS DOWNLOADER:
+This script downloads the news articles from the GDELT database and saves
+them in a csv file.
+'''
 import os
 import json
 import requests
@@ -208,6 +209,9 @@ def json_df(json_object):
                             ignore_index=True)
     return df_holder
 
+
+# NEWS EXTRACTOR:
+###############################################################################
 # Creamos una función que extraiga el texto de las noticias válidas:
 def extraer_texto(url):
     config = Config()
@@ -242,7 +246,10 @@ def extraer_texto(url):
             return (autores, cuerpo, keywords, summary, fecha)
         except:
             return None
-        
+
+
+# PIPELINE:
+###############################################################################        
 # V_Final:
 def recopilar_noticias(url):
 
