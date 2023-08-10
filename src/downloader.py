@@ -1,5 +1,6 @@
 # GDELT TO CSV NEWS DOWNLOADER:
-# This script downloads the news articles from the GDELT database and saves them in a csv file.
+# This script downloads the news articles from the GDELT database and saves
+# them in a csv file.
 
 import os
 import json
@@ -14,7 +15,7 @@ import nltk
 nltk.download('all')
 
 # CARPETAS DE DATOS:
-#####################################################
+###############################################################################
 if not os.path.exists('../data'):
     os.makedirs('../data')
 
@@ -30,7 +31,7 @@ if not os.path.exists('../data/processed'):
     os.makedirs('../data/processed')
 
 # GDELT QUERYING:
-#####################################################
+###############################################################################
 
 def api_url_constructor(query,
                         mode='artlist',
@@ -58,8 +59,13 @@ def query_cleaner(query):
     query = re.sub(patrones, ' ', query)
     
     # Terminos de denominacion empresarial que no son utiles:
-    terminos_eliminar = r' Inc\.| Corp\.| Ltd\.| PLC| Co\.| S\.A\.|& KGaA|& KgaA|Co\., Ltd\.|P L C|\(publ\)|\.Com|\.com|A/S|AB|AE|AG|AS|ASA|Abp|CORP|Co|Corp|GmbH & KGaA|Inc|Inc\.|KGaA|LLC|LP|LPG|LTD|Ltd|MFG|NL|NV|Oyj|PLC|Plc|RL|SA|SE|SGPS|SpA|plc|rp'
-
+    terminos_eliminar = (
+        r' Inc\.| Corp\.| Ltd\.| PLC| Co\.| S\.A\.|& KGaA|& KgaA|'
+        r'Co\., Ltd\.|P L C|\(publ\)|\.Com|\.com|A/S|AB|AE|AG|AS|'
+        r'ASA|Abp|CORP|Co|Corp|GmbH & KGaA|Inc|Inc\.|KGaA|LLC|LP|'
+        r'LPG|LTD|Ltd|MFG|NL|NV|Oyj|PLC|Plc|RL|SA|SE|SGPS|SpA|plc|rp'
+        )
+    
     query = re.sub(terminos_eliminar,
                     '',
                     query,
@@ -85,7 +91,10 @@ def name_amplifier(name):
         nombre_corto_2 = ' '.join(name.split()[:2])
         nombre_corto_3 = ' '.join(name.split()[:1])
         # Unimos con 'OR' los diferentes nombres:
-        nombre_query = f'("{nombre_corto_3}" OR "{name}" OR "{nombre_corto}" OR "{nombre_corto_2}")'
+        nombre_query = (
+            f'("{nombre_corto_3}" OR "{name}" OR '
+            f'"{nombre_corto}" OR "{nombre_corto_2}")'
+        )
     
     return nombre_query
 
@@ -133,7 +142,8 @@ def name_to_query(name, positives, negatives):
     '''
     # Limpiamos el nombre:
     name = query_cleaner(name)
-    # Añadimos permutaciones de palabras, pero si alguna palabra tiene 4 letras o menos no:
+    # Añadimos permutaciones de palabras, 
+    # pero si alguna palabra tiene 4 letras o menos no:
     palabras = name.split(' ')
     if len(palabras)>1:
         for p in palabras:
@@ -154,7 +164,9 @@ def get_json(url, query, download = False):
         results = requests.get(url=url).json()
     except:
         try:
-            results = json.loads(requests.get(url=url).content.replace(b'\\', b''))
+            results = json.loads(
+                requests.get(url=url).content.replace(b'\\', b'')
+                )
         except:
             try:
                 results = json.loads(urllib.request.urlopen(url)
@@ -190,14 +202,19 @@ def json_df(json_object):
                         'country': country}
         # Añadimos la nueva fila al dataframe:
         df_holder = pd.concat([df_holder,
-                            pd.DataFrame.from_dict(nueva_fila, orient='index').T],
+                            pd.DataFrame.from_dict(
+                                nueva_fila, 
+                                orient='index').T],
                             ignore_index=True)
     return df_holder
 
 # Creamos una función que extraiga el texto de las noticias válidas:
 def extraer_texto(url):
     config = Config()
-    config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36'
+    config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' \
+        'AppleWebKit/537.36 (KHTML, like Gecko) ' \
+        'Chrome/88.0.4324.150 Safari/537.36'
+
     config.memoize_articles = False
     config.fetch_images = False
     try:
@@ -213,7 +230,6 @@ def extraer_texto(url):
         return (autores, cuerpo, keywords, summary, fecha)
     except:
         try:
-            config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36'
             a = Article(url)
             a.download()
             a.parse()
@@ -234,7 +250,8 @@ def recopilar_noticias(url):
     try:
         autores, cuerpo, keywords, summary, fecha = extraer_texto(url)
     except:
-        # Si no podemos, guardamos los datos previos y pasamos a la siguiente iteración:
+        # Si no podemos, guardamos los datos previos y pasamos
+        # a la siguiente iteración:
         autores = ''
         cuerpo = ''
         keywords = ''
@@ -253,10 +270,12 @@ def recopilar_noticias(url):
             None
     else:
         fecha = ''
-        # El cuerpo de la noticia puede contener saltos de línea, lo que nos daría problemas al guardar el CSV:
+        # El cuerpo de la noticia puede contener saltos de línea,
+        # lo que nos daría problemas al guardar el CSV:
     cuerpo = cuerpo.replace('\n', ' ')
     summary = summary.replace('\n', ' ')
-    # A veces el cuerpo de la noticia contiene el caracter ';', lo que nos daría problemas al guardar el CSV:
+    # A veces el cuerpo de la noticia contiene el caracter ';',
+    # lo que nos daría problemas al guardar el CSV:
     cuerpo = cuerpo.replace(';', ',')
     summary = summary.replace(';', ',')
     # A veces hay otros caracteres que dan problemas, los quitamos:
@@ -275,11 +294,17 @@ def recopilar_noticias(url):
     return nueva_fila
 
 def pipeline_total(query, positives, negatives, start_date, end_date):
-    final_query = query_completion(name_amplifier(query_cleaner(query)), positives, negatives)
+    final_query = query_completion(
+        name_amplifier(query_cleaner(query)),
+        positives,
+        negatives)
     url = api_url_constructor(f'{final_query}')
     json_noticias = get_json(url, query, download = False)
     df_json = json_df(json_noticias)
-    filas = joblib.Parallel(n_jobs=-1)(joblib.delayed(recopilar_noticias)(urls) for urls in tqdm(df_json['url']))
+    filas = joblib.Parallel(
+        n_jobs=-1)(
+            joblib.delayed(
+                recopilar_noticias)(urls) for urls in tqdm(df_json['url']))
     for i in range(len(filas)):
         df_json.at[i,'autores'] = ";".join(filas[i]['autores'])
         df_json.at[i,'keywords'] = ";".join(filas[i]['keywords'])
